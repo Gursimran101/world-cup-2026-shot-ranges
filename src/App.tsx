@@ -24,6 +24,7 @@ const METERS_TO_YARDS = 1.0936133
 const DISTANCE_RINGS_YD = [6, 12, 18, 24, 30, 36]
 const MARKER_RADIUS = 1.35
 const SELECTED_MARKER_RADIUS = 1.63
+const SHOT_DOT_STAGGER_MS = 8
 const DATA_VERSION = '2026-08-01-player-images'
 const DATA_URL = `./data/worldcup-2026.json?v=${DATA_VERSION}`
 const PITCH_VIEWBOX_X = -3
@@ -317,7 +318,7 @@ function PitchMap({
               cx={svgX(shot.playerX)}
               cy={svgY(shot.playerY)}
               r={shot.isGoal ? 0.82 : 0.46}
-              style={{ '--delay': `${Math.min(index, 320) * 12}ms` } as React.CSSProperties}
+              style={{ '--delay': `${index * SHOT_DOT_STAGGER_MS}ms` } as React.CSSProperties}
             >
               <title>
                 {shot.teamAbbreviation} - {shot.playerName} - {formatDistance(shot.distanceYards, 'yards')}
@@ -541,7 +542,7 @@ function App() {
       <header className="topbar">
         <div className="title-block">
           <span>World Cup 2026</span>
-          <h1>Average Shot Range by Nation</h1>
+          <h1>Shots by Nation</h1>
         </div>
         <div className="controls" aria-label="Visualization controls">
           <div className="segmented">

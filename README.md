@@ -1,4 +1,4 @@
-# World Cup 2026 Shot Ranges
+# Shots by Nation
 
 Interactive GitHub Pages app for visualizing FIFA World Cup 2026 shot and goal distances by nation.
 
