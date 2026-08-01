@@ -301,7 +301,7 @@ function PitchMap({
               <clipPath id={clipId}>
                 <circle r={radius} />
               </clipPath>
-              <circle className="hit-area" r={radius + 2.6} />
+              <circle className="hit-area" r={radius} />
               <image
                 className="marker-flag"
                 href={flagUrl}
@@ -534,7 +534,6 @@ function App() {
       <section className="summary-strip" aria-label="Tournament summary">
         <StatTile icon={<Trophy size={17} />} label="Nations" value={String(nationStats.length)} />
         <StatTile icon={<Goal size={17} />} label="Goals" value={String(goals.length)} />
-        <StatTile icon={<Target size={17} />} label={mode === 'goals' ? 'Goal Rows' : 'Shot Rows'} value={String(filteredShots.length)} />
         <StatTile icon={<Ruler size={17} />} label="Average" value={formatDistance(avgDistance, unit)} />
       </section>
 
