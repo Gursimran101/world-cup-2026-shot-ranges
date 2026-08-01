@@ -315,6 +315,7 @@ function PitchMap({
           const markerIndex = nations.findIndex((row) => row.teamId === nation.teamId)
           const markerPosition = nationMarkerPosition(nation, markerIndex)
           const flagUrl = flagUrlForCountry(nation.countryCode)
+          const clipId = `flag-clip-${nation.teamId}`
 
           return (
             <g
@@ -330,13 +331,20 @@ function PitchMap({
                 if (event.key === 'Enter' || event.key === ' ') onSelect(nation.teamId)
               }}
             >
+              <clipPath id={clipId}>
+                <circle r={radius} />
+              </clipPath>
               <circle className="hit-area" r={radius} />
-              <foreignObject className="marker-flag-object" x={-radius} y={-radius} width={radius * 2} height={radius * 2}>
-                <div className="marker-flag-frame">
-                  <img src={flagUrl} alt="" />
-                </div>
-              </foreignObject>
-              <circle className="marker-ring" r={radius} />
+              <image
+                className="marker-flag"
+                href={flagUrl}
+                x={-radius}
+                y={-radius}
+                width={radius * 2}
+                height={radius * 2}
+                clipPath={`url(#${clipId})`}
+                preserveAspectRatio="xMinYMid slice"
+              />
               <title>
                 {nation.teamName}: {formatDistance(nation.avgDistanceYards, 'yards')} average
               </title>
