@@ -24,6 +24,8 @@ const METERS_TO_YARDS = 1.0936133
 const DISTANCE_RINGS_YD = [6, 12, 18, 24, 30, 36]
 const MARKER_RADIUS = 1.35
 const SELECTED_MARKER_RADIUS = 1.63
+const DATA_VERSION = '2026-08-01-player-images'
+const DATA_URL = `./data/worldcup-2026.json?v=${DATA_VERSION}`
 const PITCH_VIEWBOX_X = -3
 const PITCH_VIEWBOX_Y = -3
 const PITCH_VIEWBOX_WIDTH = HALF_PITCH_LENGTH + 6
@@ -174,7 +176,7 @@ function useDataset() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('./data/worldcup-2026.json')
+    fetch(DATA_URL, { cache: 'no-store' })
       .then((response) => {
         if (!response.ok) throw new Error('Dataset not found. Run npm run data:fetch.')
         return response.json()
@@ -456,7 +458,11 @@ function DetailPanel({
         {rows.slice(0, 24).map((shot) => (
           <article key={shot.id} className={shot.isGoal ? 'goal-row' : ''}>
             <div className="avatar">
-              {shot.playerImageUrl ? <img src={shot.playerImageUrl} alt="" /> : <span>{initials(shot.playerName)}</span>}
+              {shot.playerImageUrl ? (
+                <img src={shot.playerImageUrl} alt="" referrerPolicy="no-referrer" />
+              ) : (
+                <span>{initials(shot.playerName)}</span>
+              )}
             </div>
             <div className="shot-copy">
               <strong>{shot.playerName}</strong>
