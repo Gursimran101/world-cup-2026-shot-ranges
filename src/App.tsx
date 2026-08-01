@@ -568,7 +568,11 @@ function App() {
 
       <section className="summary-strip" aria-label="Tournament summary">
         <StatTile icon={<Trophy size={17} />} label="Nations" value={String(nationStats.length)} />
-        <StatTile icon={<Goal size={17} />} label="Goals" value={String(goals.length)} />
+        <StatTile
+          icon={mode === 'goals' ? <Goal size={17} /> : <Target size={17} />}
+          label={mode === 'goals' ? 'Goals' : 'Shots'}
+          value={String(mode === 'goals' ? goals.length : filteredShots.length)}
+        />
         <StatTile icon={<Ruler size={17} />} label="Average" value={formatDistance(avgDistance, unit)} />
       </section>
 
