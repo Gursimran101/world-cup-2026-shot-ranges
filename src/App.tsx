@@ -590,6 +590,14 @@ function App() {
             Circle Flags
           </a>
         </span>
+        {dataset.source.playerImages && (
+          <span>
+            Player images:{' '}
+            <a href={dataset.source.playerImages.url} target="_blank" rel="noreferrer">
+              The Guardian
+            </a>
+          </span>
+        )}
         {generated && <span>Generated {generated}</span>}
       </footer>
     </main>

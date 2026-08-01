@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "data:fetch": "node scripts/fetch-data.mjs",
+    "data:images": "node scripts/enrich-player-images.mjs",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"

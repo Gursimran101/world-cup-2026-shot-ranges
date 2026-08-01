@@ -108,6 +108,10 @@ function chunks(values, size) {
   return result
 }
 
+function playerKey(teamId, playerId) {
+  return `${teamId}:${playerId}`
+}
+
 function isPenalty(shot) {
   return shot.situation === 'penalty' || shot.goal_type === 'penalty'
 }
@@ -221,24 +225,33 @@ async function main() {
 
   const teamsById = new Map(teams.map((team) => [team.id, slimTeam(team)]))
   const matchesById = new Map(completedMatches.map((match) => [match.id, slimMatch(match)]))
-  const playersById = new Map()
+  const playersByCompositeKey = new Map()
+  const playerCandidatesById = new Map()
   for (const row of rosters) {
-    playersById.set(row.player.id, slimPlayer(row))
+    const player = slimPlayer(row)
+    playersByCompositeKey.set(playerKey(row.team_id, row.player.id), player)
+
+    const candidates = playerCandidatesById.get(row.player.id) ?? []
+    candidates.push(player)
+    playerCandidatesById.set(row.player.id, candidates)
   }
 
   const normalizedShots = shots
     .filter((shot) => matchesById.has(shot.match_id))
     .map((shot) => {
       const distance = shotDistance(shot.player_x, shot.player_y)
-      const player = playersById.get(shot.player_id) ?? {
-        id: shot.player_id,
-        teamId: shot.team_id,
-        name: `Player ${shot.player_id}`,
-        shortName: null,
-        position: null,
-        jerseyNumber: null,
-        imageUrl: null,
-      }
+      const playerCandidates = playerCandidatesById.get(shot.player_id) ?? []
+      const player =
+        playersByCompositeKey.get(playerKey(shot.team_id, shot.player_id)) ??
+        (playerCandidates.length === 1 ? playerCandidates[0] : null) ?? {
+          id: shot.player_id,
+          teamId: shot.team_id,
+          name: `Player ${shot.player_id}`,
+          shortName: null,
+          position: null,
+          jerseyNumber: null,
+          imageUrl: null,
+        }
       const team = teamsById.get(shot.team_id)
       const match = matchesById.get(shot.match_id)
 
@@ -302,7 +315,7 @@ async function main() {
     },
     teams: [...teamsById.values()].sort((a, b) => a.name.localeCompare(b.name)),
     matches: [...matchesById.values()].sort((a, b) => String(a.datetime).localeCompare(String(b.datetime))),
-    players: [...playersById.values()].sort((a, b) => a.name.localeCompare(b.name)),
+    players: [...playersByCompositeKey.values()].sort((a, b) => a.name.localeCompare(b.name)),
     shots: normalizedShots,
   }
 

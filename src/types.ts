@@ -58,6 +58,14 @@ export type Dataset = {
     url: string
     season: number
     note: string
+    playerImages?: {
+      name: string
+      url: string
+      dataUrl: string
+      matchedPlayers: number
+      totalPlayers: number
+      updatedAt: string
+    }
   }
   pitch: {
     lengthMeters: number
