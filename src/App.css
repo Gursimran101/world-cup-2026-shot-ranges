@@ -202,12 +202,23 @@ button {
 }
 
 .goal-trail {
-  stroke: rgba(255, 247, 218, 0.34);
-  stroke-width: 0.44;
-  stroke-dasharray: 2.2 1.9;
+  fill: none;
+  stroke: rgba(255, 244, 185, 0.42);
+  stroke-width: 0.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
   vector-effect: non-scaling-stroke;
-  animation: dash-in 1100ms ease both;
+  animation: flight-trail 1200ms cubic-bezier(0.22, 0.78, 0.28, 1) both;
   animation-delay: var(--delay);
+}
+
+.goal-ball {
+  opacity: 0;
+  fill: #fff6bb;
+  stroke: rgba(95, 54, 12, 0.85);
+  stroke-width: 0.16;
+  filter: drop-shadow(0 0 2px rgba(255, 241, 155, 0.92));
 }
 
 .shot-dot {
@@ -251,7 +262,11 @@ button {
 
 .nation-marker.selected .marker-ring {
   stroke: white;
-  stroke-width: 1.35;
+  stroke-width: 0.95;
+}
+
+.nation-marker.selected .marker-flag {
+  filter: drop-shadow(0 5px 7px rgba(0, 0, 0, 0.44));
 }
 
 .band-0-6-yd,
@@ -342,6 +357,7 @@ button {
   height: 100%;
   object-fit: cover;
   display: block;
+  transform: scale(1.12);
 }
 
 .list-flag {
@@ -555,10 +571,10 @@ footer {
   }
 }
 
-@keyframes dash-in {
+@keyframes flight-trail {
   from {
-    opacity: 0;
-    stroke-dashoffset: 10;
+    opacity: 0.2;
+    stroke-dashoffset: 1;
   }
   to {
     opacity: 1;

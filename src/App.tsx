@@ -22,6 +22,9 @@ const HALF_PITCH_LENGTH = PITCH_LENGTH / 2
 const PITCH_WIDTH = 68
 const METERS_TO_YARDS = 1.0936133
 const DISTANCE_RINGS_YD = [6, 12, 18, 24, 30, 36]
+const MARKER_RADIUS = 1.35
+const SELECTED_MARKER_RADIUS = 1.63
+const FLAG_CROP_ZOOM = 1.16
 
 function formatNumber(value: number | null | undefined, decimals = 1) {
   if (value === null || value === undefined || Number.isNaN(value)) return 'N/A'
@@ -82,6 +85,17 @@ function svgX(value: number | null) {
 
 function svgY(value: number | null) {
   return ((value ?? 50) / 100) * PITCH_WIDTH
+}
+
+function shotFlightPath(shot: Shot) {
+  const startX = svgX(shot.playerX)
+  const startY = svgY(shot.playerY)
+  const endY = svgY(shot.goalMouthY)
+  const controlX = Math.max(1.8, startX * 0.42)
+  const lift = Math.max(2.3, Math.min(7.2, startX * 0.15))
+  const controlY = startY + (endY - startY) * 0.42 - lift
+
+  return `M ${startX.toFixed(2)} ${startY.toFixed(2)} Q ${controlX.toFixed(2)} ${controlY.toFixed(2)} 0 ${endY.toFixed(2)}`
 }
 
 function nationMarkerPosition(nation: NationStats, index: number) {
@@ -193,8 +207,9 @@ function PitchMap({
   selectedTeamId: number | null
   onSelect: (teamId: number) => void
 }) {
-  const goalShots = shots.filter((shot) => shot.isGoal)
   const visibleShots = shots.filter((shot) => shot.playerX !== null && shot.playerY !== null && svgX(shot.playerX) <= HALF_PITCH_LENGTH)
+  const goalShots = visibleShots.filter((shot) => shot.isGoal)
+  const animatedGoalShots = goalShots.slice(0, 260)
   const selectedNation = nations.find((nation) => nation.teamId === selectedTeamId)
   const plottedNations = [
     ...nations.filter((nation) => nation.teamId !== selectedTeamId),
@@ -246,17 +261,36 @@ function PitchMap({
       </g>
 
       <g className="goal-lines" clipPath="url(#pitch-clip)">
-        {goalShots.slice(0, 260).map((shot, index) => (
-          <line
+        {animatedGoalShots.map((shot, index) => (
+          <path
             key={shot.id}
             className="goal-trail"
-            x1={svgX(shot.playerX)}
-            y1={svgY(shot.playerY)}
-            x2="0"
-            y2={svgY(shot.goalMouthY)}
-            style={{ '--delay': `${index * 24}ms` } as React.CSSProperties}
+            d={shotFlightPath(shot)}
+            pathLength={1}
+            style={{ '--delay': `${index * 22}ms` } as React.CSSProperties}
           />
         ))}
+      </g>
+
+      <g className="goal-flights" clipPath="url(#pitch-clip)">
+        {animatedGoalShots.map((shot, index) => {
+          const path = shotFlightPath(shot)
+          const delaySeconds = (index * 22) / 1000
+
+          return (
+            <circle key={shot.id} className="goal-ball" r="0.42">
+              <animateMotion dur="1050ms" begin={`${delaySeconds}s`} fill="remove" path={path} />
+              <animate
+                attributeName="opacity"
+                values="0;1;1;0"
+                keyTimes="0;0.1;0.78;1"
+                dur="1050ms"
+                begin={`${delaySeconds}s`}
+                fill="remove"
+              />
+            </circle>
+          )
+        })}
       </g>
 
       <g className="shot-dots" clipPath="url(#pitch-clip)">
@@ -278,7 +312,8 @@ function PitchMap({
 
       <g className="nation-markers">
         {plottedNations.map((nation) => {
-          const radius = selectedTeamId === nation.teamId ? 1.75 : 1.35
+          const radius = selectedTeamId === nation.teamId ? SELECTED_MARKER_RADIUS : MARKER_RADIUS
+          const flagSize = radius * 2 * FLAG_CROP_ZOOM
           const markerIndex = nations.findIndex((row) => row.teamId === nation.teamId)
           const markerPosition = nationMarkerPosition(nation, markerIndex)
           const flagUrl = flagUrlForCountry(nation.countryCode)
@@ -305,10 +340,10 @@ function PitchMap({
               <image
                 className="marker-flag"
                 href={flagUrl}
-                x={-radius}
-                y={-radius}
-                width={radius * 2}
-                height={radius * 2}
+                x={-flagSize / 2}
+                y={-flagSize / 2}
+                width={flagSize}
+                height={flagSize}
                 clipPath={`url(#${clipId})`}
                 preserveAspectRatio="xMidYMid slice"
               />
