@@ -135,6 +135,7 @@ button {
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: var(--shadow);
+  min-height: 0;
 }
 
 .pitch-panel {
@@ -286,7 +287,7 @@ button {
 .detail-panel {
   padding: 15px;
   min-height: 560px;
-  max-height: calc(100svh - 310px);
+  height: var(--panel-height, auto);
   overflow: hidden;
 }
 
@@ -299,6 +300,7 @@ button {
   margin-top: 12px;
   display: grid;
   gap: 7px;
+  min-height: 0;
   overflow: auto;
   padding-right: 3px;
 }
@@ -380,7 +382,8 @@ button {
 }
 
 .detail-panel {
-  overflow-y: auto;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
 }
 
 .detail-header {
@@ -425,7 +428,11 @@ button {
 
 .shot-breakdown {
   display: grid;
+  align-content: start;
   gap: 8px;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 3px;
 }
 
 .shot-breakdown article {
@@ -557,6 +564,7 @@ footer {
 
   .leaderboard,
   .detail-panel {
+    height: auto;
     min-height: 480px;
     max-height: none;
   }

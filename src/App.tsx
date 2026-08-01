@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   Activity,
   ChartNoAxesColumnIncreasing,
@@ -488,6 +488,8 @@ function App() {
   const [includePenalties, setIncludePenalties] = useState(true)
   const [unit, setUnit] = useState<Unit>('yards')
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null)
+  const workspaceRef = useRef<HTMLElement | null>(null)
+  const pitchPanelRef = useRef<HTMLElement | null>(null)
 
   const filteredShots = useMemo(() => {
     if (!dataset) return []
@@ -506,6 +508,33 @@ function App() {
       setSelectedTeamId(nationStats[0].teamId)
     }
   }, [nationStats, selectedTeamId])
+
+  useLayoutEffect(() => {
+    const workspace = workspaceRef.current
+    const pitchPanel = pitchPanelRef.current
+    if (!workspace || !pitchPanel) return
+
+    const syncPanelHeight = () => {
+      if (window.matchMedia('(max-width: 1260px)').matches) {
+        workspace.style.removeProperty('--panel-height')
+        return
+      }
+
+      workspace.style.setProperty('--panel-height', `${pitchPanel.getBoundingClientRect().height}px`)
+    }
+
+    syncPanelHeight()
+
+    const resizeObserver = new ResizeObserver(syncPanelHeight)
+    resizeObserver.observe(pitchPanel)
+    window.addEventListener('resize', syncPanelHeight)
+
+    return () => {
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', syncPanelHeight)
+      workspace.style.removeProperty('--panel-height')
+    }
+  }, [dataset])
 
   const goals = filteredShots.filter((shot) => shot.isGoal)
   const avgDistance =
@@ -576,8 +605,8 @@ function App() {
         <StatTile icon={<Ruler size={17} />} label="Average" value={formatDistance(avgDistance, unit)} />
       </section>
 
-      <section className="workspace">
-        <section className="pitch-panel">
+      <section className="workspace" ref={workspaceRef}>
+        <section className="pitch-panel" ref={pitchPanelRef}>
           <div className="section-heading pitch-title">
             <Gauge size={18} />
             <h2>{mode === 'goals' ? 'Goal Distance Map' : 'Shot Distance Map'}</h2>
