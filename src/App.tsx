@@ -24,6 +24,12 @@ const METERS_TO_YARDS = 1.0936133
 const DISTANCE_RINGS_YD = [6, 12, 18, 24, 30, 36]
 const MARKER_RADIUS = 1.35
 const SELECTED_MARKER_RADIUS = 1.63
+const PITCH_VIEWBOX_X = -3
+const PITCH_VIEWBOX_Y = -3
+const PITCH_VIEWBOX_WIDTH = HALF_PITCH_LENGTH + 6
+const PITCH_VIEWBOX_HEIGHT = 74
+const MARKER_SIZE_PERCENT = (MARKER_RADIUS * 2 * 100) / PITCH_VIEWBOX_WIDTH
+const SELECTED_MARKER_SCALE = SELECTED_MARKER_RADIUS / MARKER_RADIUS
 
 function formatNumber(value: number | null | undefined, decimals = 1) {
   if (value === null || value === undefined || Number.isNaN(value)) return 'N/A'
@@ -91,6 +97,13 @@ function shotFlightPath(shot: Shot) {
   const controlY = startY + (endY - startY) * 0.42 - lift
 
   return `M ${startX.toFixed(2)} ${startY.toFixed(2)} Q ${controlX.toFixed(2)} ${controlY.toFixed(2)} 0 ${endY.toFixed(2)}`
+}
+
+function pitchOverlayPosition(position: { x: number; y: number }) {
+  return {
+    left: ((position.x - PITCH_VIEWBOX_X) / PITCH_VIEWBOX_WIDTH) * 100,
+    top: ((position.y - PITCH_VIEWBOX_Y) / PITCH_VIEWBOX_HEIGHT) * 100,
+  }
 }
 
 function nationMarkerPosition(nation: NationStats, index: number) {
@@ -212,143 +225,137 @@ function PitchMap({
   ]
 
   return (
-    <svg className="pitch" viewBox={`-3 -3 ${HALF_PITCH_LENGTH + 6} 74`} role="img" aria-label="World Cup 2026 attacking-half shot range pitch">
-      <defs>
-        <clipPath id="pitch-clip">
-          <rect x="0" y="0" width={HALF_PITCH_LENGTH} height={PITCH_WIDTH} rx="0" />
-        </clipPath>
-        <linearGradient id="pitch-grass" x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0%" stopColor="#2e7a51" />
-          <stop offset="55%" stopColor="#1f6b46" />
-          <stop offset="100%" stopColor="#185238" />
-        </linearGradient>
-      </defs>
+    <div className="pitch">
+      <svg
+        className="pitch-field"
+        viewBox={`${PITCH_VIEWBOX_X} ${PITCH_VIEWBOX_Y} ${PITCH_VIEWBOX_WIDTH} ${PITCH_VIEWBOX_HEIGHT}`}
+        role="img"
+        aria-label="World Cup 2026 attacking-half shot range pitch"
+      >
+        <defs>
+          <clipPath id="pitch-clip">
+            <rect x="0" y="0" width={HALF_PITCH_LENGTH} height={PITCH_WIDTH} rx="0" />
+          </clipPath>
+          <linearGradient id="pitch-grass" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stopColor="#2e7a51" />
+            <stop offset="55%" stopColor="#1f6b46" />
+            <stop offset="100%" stopColor="#185238" />
+          </linearGradient>
+        </defs>
 
-      <rect className="pitch-base" x="0" y="0" width={HALF_PITCH_LENGTH} height={PITCH_WIDTH} />
-      <g className="mow-lines" clipPath="url(#pitch-clip)">
-        {Array.from({ length: 6 }, (_, index) => (
-          <rect key={index} x={(index * HALF_PITCH_LENGTH) / 6} y="0" width={HALF_PITCH_LENGTH / 12} height={PITCH_WIDTH} />
-        ))}
-      </g>
+        <rect className="pitch-base" x="0" y="0" width={HALF_PITCH_LENGTH} height={PITCH_WIDTH} />
+        <g className="mow-lines" clipPath="url(#pitch-clip)">
+          {Array.from({ length: 6 }, (_, index) => (
+            <rect key={index} x={(index * HALF_PITCH_LENGTH) / 6} y="0" width={HALF_PITCH_LENGTH / 12} height={PITCH_WIDTH} />
+          ))}
+        </g>
 
-      <g className="pitch-lines" clipPath="url(#pitch-clip)">
-        <rect x="0" y="0" width={HALF_PITCH_LENGTH} height={PITCH_WIDTH} />
-        <line x1={HALF_PITCH_LENGTH} y1="0" x2={HALF_PITCH_LENGTH} y2={PITCH_WIDTH} />
-        <circle cx={HALF_PITCH_LENGTH} cy={PITCH_WIDTH / 2} r="9.15" />
-        <rect x="0" y="13.84" width="16.5" height="40.32" />
-        <rect x="0" y="24.84" width="5.5" height="18.32" />
-        <path d="M 16.5 24.85 A 9.15 9.15 0 0 1 16.5 43.15" />
-        <circle cx="11" cy="34" r="0.45" />
-      </g>
+        <g className="pitch-lines" clipPath="url(#pitch-clip)">
+          <rect x="0" y="0" width={HALF_PITCH_LENGTH} height={PITCH_WIDTH} />
+          <line x1={HALF_PITCH_LENGTH} y1="0" x2={HALF_PITCH_LENGTH} y2={PITCH_WIDTH} />
+          <circle cx={HALF_PITCH_LENGTH} cy={PITCH_WIDTH / 2} r="9.15" />
+          <rect x="0" y="13.84" width="16.5" height="40.32" />
+          <rect x="0" y="24.84" width="5.5" height="18.32" />
+          <path d="M 16.5 24.85 A 9.15 9.15 0 0 1 16.5 43.15" />
+          <circle cx="11" cy="34" r="0.45" />
+        </g>
 
-      <g className="distance-rings" clipPath="url(#pitch-clip)">
-        {DISTANCE_RINGS_YD.map((yards) => {
-          const radius = yards / METERS_TO_YARDS
-          return (
-            <g key={yards}>
-              <circle cx="0" cy="34" r={radius} />
-              <text x={radius * 0.62 + 0.9} y={34 - radius * 0.72}>
-                {yards} yd
-              </text>
-            </g>
-          )
-        })}
-      </g>
+        <g className="distance-rings" clipPath="url(#pitch-clip)">
+          {DISTANCE_RINGS_YD.map((yards) => {
+            const radius = yards / METERS_TO_YARDS
+            return (
+              <g key={yards}>
+                <circle cx="0" cy="34" r={radius} />
+                <text x={radius * 0.62 + 0.9} y={34 - radius * 0.72}>
+                  {yards} yd
+                </text>
+              </g>
+            )
+          })}
+        </g>
 
-      <g className="goal-lines" clipPath="url(#pitch-clip)">
-        {animatedGoalShots.map((shot, index) => (
-          <path
-            key={shot.id}
-            className="goal-trail"
-            d={shotFlightPath(shot)}
-            pathLength={1}
-            style={{ '--delay': `${index * 22}ms` } as React.CSSProperties}
-          />
-        ))}
-      </g>
+        <g className="goal-lines" clipPath="url(#pitch-clip)">
+          {animatedGoalShots.map((shot, index) => (
+            <path
+              key={shot.id}
+              className="goal-trail"
+              d={shotFlightPath(shot)}
+              pathLength={1}
+              style={{ '--delay': `${index * 22}ms` } as React.CSSProperties}
+            />
+          ))}
+        </g>
 
-      <g className="goal-flights" clipPath="url(#pitch-clip)">
-        {animatedGoalShots.map((shot, index) => {
-          const path = shotFlightPath(shot)
-          const delaySeconds = (index * 22) / 1000
+        <g className="goal-flights" clipPath="url(#pitch-clip)">
+          {animatedGoalShots.map((shot, index) => {
+            const path = shotFlightPath(shot)
+            const delaySeconds = (index * 22) / 1000
 
-          return (
-            <circle key={shot.id} className="goal-ball" r="0.42">
-              <animateMotion dur="1050ms" begin={`${delaySeconds}s`} fill="remove" path={path} />
-              <animate
-                attributeName="opacity"
-                values="0;1;1;0"
-                keyTimes="0;0.1;0.78;1"
-                dur="1050ms"
-                begin={`${delaySeconds}s`}
-                fill="remove"
-              />
+            return (
+              <circle key={shot.id} className="goal-ball" r="0.42">
+                <animateMotion dur="1050ms" begin={`${delaySeconds}s`} fill="remove" path={path} />
+                <animate
+                  attributeName="opacity"
+                  values="0;1;1;0"
+                  keyTimes="0;0.1;0.78;1"
+                  dur="1050ms"
+                  begin={`${delaySeconds}s`}
+                  fill="remove"
+                />
+              </circle>
+            )
+          })}
+        </g>
+
+        <g className="shot-dots" clipPath="url(#pitch-clip)">
+          {visibleShots.map((shot, index) => (
+            <circle
+              key={shot.id}
+              className={`shot-dot ${shot.isGoal ? 'is-goal' : ''}`}
+              cx={svgX(shot.playerX)}
+              cy={svgY(shot.playerY)}
+              r={shot.isGoal ? 0.82 : 0.46}
+              style={{ '--delay': `${Math.min(index, 320) * 12}ms` } as React.CSSProperties}
+            >
+              <title>
+                {shot.teamAbbreviation} - {shot.playerName} - {formatDistance(shot.distanceYards, 'yards')}
+              </title>
             </circle>
-          )
-        })}
-      </g>
+          ))}
+        </g>
+      </svg>
 
-      <g className="shot-dots" clipPath="url(#pitch-clip)">
-        {visibleShots.map((shot, index) => (
-          <circle
-            key={shot.id}
-            className={`shot-dot ${shot.isGoal ? 'is-goal' : ''}`}
-            cx={svgX(shot.playerX)}
-            cy={svgY(shot.playerY)}
-            r={shot.isGoal ? 0.82 : 0.46}
-            style={{ '--delay': `${Math.min(index, 320) * 12}ms` } as React.CSSProperties}
-          >
-            <title>
-              {shot.teamAbbreviation} - {shot.playerName} - {formatDistance(shot.distanceYards, 'yards')}
-            </title>
-          </circle>
-        ))}
-      </g>
-
-      <g className="nation-markers">
+      <div className="nation-markers" aria-label="Nation markers">
         {plottedNations.map((nation) => {
-          const radius = selectedTeamId === nation.teamId ? SELECTED_MARKER_RADIUS : MARKER_RADIUS
           const markerIndex = nations.findIndex((row) => row.teamId === nation.teamId)
           const markerPosition = nationMarkerPosition(nation, markerIndex)
+          const overlayPosition = pitchOverlayPosition(markerPosition)
           const flagUrl = flagUrlForCountry(nation.countryCode)
-          const clipId = `flag-clip-${nation.teamId}`
+          const isSelected = selectedTeamId === nation.teamId
 
           return (
-            <g
+            <button
               key={nation.teamId}
-              className={`nation-marker ${selectedTeamId === nation.teamId ? 'selected' : ''}`}
+              type="button"
+              className={`nation-marker ${isSelected ? 'selected' : ''}`}
               data-team-id={nation.teamId}
               aria-label={`${nation.teamName}: ${formatDistance(nation.avgDistanceYards, 'yards')} average`}
-              transform={`translate(${markerPosition.x} ${markerPosition.y})`}
-              role="button"
-              tabIndex={0}
               onClick={() => onSelect(nation.teamId)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') onSelect(nation.teamId)
-              }}
+              style={
+                {
+                  '--marker-size': `${MARKER_SIZE_PERCENT}%`,
+                  '--selected-scale': SELECTED_MARKER_SCALE,
+                  left: `${overlayPosition.left}%`,
+                  top: `${overlayPosition.top}%`,
+                } as React.CSSProperties
+              }
             >
-              <clipPath id={clipId}>
-                <circle r={radius} />
-              </clipPath>
-              <circle className="hit-area" r={radius} />
-              <image
-                className="marker-flag"
-                href={flagUrl}
-                x={-radius}
-                y={-radius}
-                width={radius * 2}
-                height={radius * 2}
-                clipPath={`url(#${clipId})`}
-                preserveAspectRatio="xMidYMid meet"
-              />
-              <title>
-                {nation.teamName}: {formatDistance(nation.avgDistanceYards, 'yards')} average
-              </title>
-            </g>
+              <img className="marker-flag" src={flagUrl} alt="" draggable={false} />
+            </button>
           )
         })}
-      </g>
-    </svg>
+      </div>
+    </div>
   )
 }
 
