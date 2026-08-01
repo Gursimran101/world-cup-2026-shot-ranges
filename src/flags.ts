@@ -51,5 +51,5 @@ const FIFA_TO_FLAG_CODE: Record<string, string> = {
 
 export function flagUrlForCountry(countryCode: string) {
   const flagCode = FIFA_TO_FLAG_CODE[countryCode] ?? countryCode.toLowerCase()
-  return `https://flagcdn.com/${flagCode}.svg`
+  return `https://hatscripts.github.io/circle-flags/flags/${flagCode}.svg`
 }

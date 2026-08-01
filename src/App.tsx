@@ -66,10 +66,6 @@ function classifyDistance(yards: number) {
   return '24+ yd'
 }
 
-function bandClass(band: string) {
-  return `band-${band.replace(/\W+/g, '-').toLowerCase()}`
-}
-
 function median(values: number[]) {
   if (!values.length) return 0
   const sorted = [...values].sort((a, b) => a - b)
@@ -320,7 +316,7 @@ function PitchMap({
           return (
             <g
               key={nation.teamId}
-              className={`nation-marker ${bandClass(nation.band)} ${selectedTeamId === nation.teamId ? 'selected' : ''}`}
+              className={`nation-marker ${selectedTeamId === nation.teamId ? 'selected' : ''}`}
               data-team-id={nation.teamId}
               aria-label={`${nation.teamName}: ${formatDistance(nation.avgDistanceYards, 'yards')} average`}
               transform={`translate(${markerPosition.x} ${markerPosition.y})`}
@@ -343,7 +339,7 @@ function PitchMap({
                 width={radius * 2}
                 height={radius * 2}
                 clipPath={`url(#${clipId})`}
-                preserveAspectRatio="xMinYMid slice"
+                preserveAspectRatio="xMidYMid meet"
               />
               <title>
                 {nation.teamName}: {formatDistance(nation.avgDistanceYards, 'yards')} average
@@ -586,8 +582,8 @@ function App() {
         <span>Source: {dataset.source.name}</span>
         <span>
           Flags:{' '}
-          <a href="https://flagcdn.com/" target="_blank" rel="noreferrer">
-            FlagCDN
+          <a href="https://hatscripts.github.io/circle-flags/" target="_blank" rel="noreferrer">
+            Circle Flags
           </a>
         </span>
         {generated && <span>Generated {generated}</span>}
