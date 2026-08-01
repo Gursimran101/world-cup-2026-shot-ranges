@@ -410,27 +410,6 @@ button {
   margin: 15px 0;
 }
 
-.callout {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  padding: 11px;
-  border-radius: 8px;
-  background: #f3f6f0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.callout svg {
-  flex: 0 0 auto;
-  color: var(--accent);
-}
-
-.callout p {
-  margin: 0;
-}
-
 .longest-shot {
   margin: 14px 0;
   display: grid;

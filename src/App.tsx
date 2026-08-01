@@ -443,13 +443,6 @@ function DetailPanel({
         <StatTile icon={<Crosshair size={17} />} label="xG" value={formatNumber(nation.xg, 2)} />
       </div>
 
-      <div className="callout">
-        <Gauge size={18} />
-        <p>
-          Ball speed is not included in the source data. Distances use the shot origin to the center of the goal.
-        </p>
-      </div>
-
       {longest && (
         <div className="longest-shot">
           <span>Longest {mode === 'goals' ? 'goal' : 'shot'}</span>
