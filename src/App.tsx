@@ -24,7 +24,6 @@ const METERS_TO_YARDS = 1.0936133
 const DISTANCE_RINGS_YD = [6, 12, 18, 24, 30, 36]
 const MARKER_RADIUS = 1.35
 const SELECTED_MARKER_RADIUS = 1.63
-const FLAG_CROP_ZOOM = 1.16
 
 function formatNumber(value: number | null | undefined, decimals = 1) {
   if (value === null || value === undefined || Number.isNaN(value)) return 'N/A'
@@ -313,11 +312,9 @@ function PitchMap({
       <g className="nation-markers">
         {plottedNations.map((nation) => {
           const radius = selectedTeamId === nation.teamId ? SELECTED_MARKER_RADIUS : MARKER_RADIUS
-          const flagSize = radius * 2 * FLAG_CROP_ZOOM
           const markerIndex = nations.findIndex((row) => row.teamId === nation.teamId)
           const markerPosition = nationMarkerPosition(nation, markerIndex)
           const flagUrl = flagUrlForCountry(nation.countryCode)
-          const clipId = `flag-clip-${nation.teamId}`
 
           return (
             <g
@@ -333,20 +330,12 @@ function PitchMap({
                 if (event.key === 'Enter' || event.key === ' ') onSelect(nation.teamId)
               }}
             >
-              <clipPath id={clipId}>
-                <circle r={radius} />
-              </clipPath>
               <circle className="hit-area" r={radius} />
-              <image
-                className="marker-flag"
-                href={flagUrl}
-                x={-flagSize / 2}
-                y={-flagSize / 2}
-                width={flagSize}
-                height={flagSize}
-                clipPath={`url(#${clipId})`}
-                preserveAspectRatio="xMidYMid slice"
-              />
+              <foreignObject className="marker-flag-object" x={-radius} y={-radius} width={radius * 2} height={radius * 2}>
+                <div className="marker-flag-frame">
+                  <img src={flagUrl} alt="" />
+                </div>
+              </foreignObject>
               <circle className="marker-ring" r={radius} />
               <title>
                 {nation.teamName}: {formatDistance(nation.avgDistanceYards, 'yards')} average
