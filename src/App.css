@@ -229,8 +229,8 @@ button {
 }
 
 .shot-dot {
-  fill: rgba(224, 244, 235, 0.72);
-  stroke: rgba(16, 63, 43, 0.72);
+  fill: rgba(236, 246, 241, 0.46);
+  stroke: rgba(16, 63, 43, 0.34);
   stroke-width: 0.16;
   transform-box: fill-box;
   transform-origin: center;
@@ -239,8 +239,8 @@ button {
 }
 
 .shot-dot.is-goal {
-  fill: #ffdf73;
-  stroke: #5d320c;
+  fill: rgba(255, 226, 126, 0.72);
+  stroke: rgba(93, 50, 12, 0.48);
   stroke-width: 0.22;
 }
 
