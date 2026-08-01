@@ -71,6 +71,7 @@ export type NationStats = {
   teamId: number
   teamName: string
   teamAbbreviation: string
+  countryCode: string
   shots: Shot[]
   count: number
   goalCount: number

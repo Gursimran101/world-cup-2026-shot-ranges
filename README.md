@@ -14,6 +14,8 @@ npm run data:fetch
 
 The fetch script pulls 2026 teams, completed matches, rosters, and per-match shots from the BALLDONTLIE FIFA World Cup API. Shot distances are computed from the API shot origin coordinates using a 105m x 68m pitch and the goal center at `x=0, y=50`.
 
+Country flags are rendered from [FlagCDN](https://flagcdn.com/).
+
 ## Development
 
 ```bash

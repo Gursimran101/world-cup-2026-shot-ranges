@@ -162,14 +162,15 @@ button {
 }
 
 .pitch {
-  width: 100%;
+  width: min(100%, 520px);
   height: auto;
   min-height: 0;
-  aspect-ratio: 111 / 74;
+  aspect-ratio: 58.5 / 74;
   border-radius: 8px;
   display: block;
   background: #174b35;
   align-self: start;
+  justify-self: center;
 }
 
 .pitch-base {
@@ -235,32 +236,22 @@ button {
   pointer-events: all;
 }
 
-.nation-marker .marker-core {
-  fill: var(--marker, #ffffff);
-  stroke: #122116;
-  stroke-width: 0.62;
-  vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.32));
-  opacity: 0.72;
-}
-
-.nation-marker text {
-  fill: #111713;
-  font-size: 2.6px;
-  font-weight: 850;
-  text-anchor: middle;
+.nation-marker .marker-flag {
   pointer-events: none;
-  opacity: 0;
+  filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.36));
 }
 
-.nation-marker.selected .marker-core {
+.nation-marker .marker-ring {
+  fill: none;
+  stroke: rgba(18, 33, 22, 0.78);
+  stroke-width: 0.74;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.nation-marker.selected .marker-ring {
   stroke: white;
-  stroke-width: 1.1;
-  opacity: 1;
-}
-
-.nation-marker.selected text {
-  opacity: 1;
+  stroke-width: 1.35;
 }
 
 .band-0-6-yd,
@@ -316,7 +307,7 @@ button {
   min-height: 58px;
   border-radius: 8px;
   display: grid;
-  grid-template-columns: 28px 13px minmax(0, 1fr) auto;
+  grid-template-columns: 28px 32px minmax(0, 1fr) auto;
   gap: 9px;
   align-items: center;
   padding: 9px;
@@ -336,11 +327,31 @@ button {
   text-align: center;
 }
 
-.swatch {
-  width: 11px;
+.flag-badge {
+  display: inline-grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #dfe8e1;
+  border: 1px solid rgba(22, 32, 23, 0.18);
+  box-shadow: 0 2px 6px rgba(28, 44, 32, 0.12);
+}
+
+.flag-badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.list-flag {
+  width: 32px;
   height: 32px;
-  border-radius: 999px;
-  background: var(--marker);
+}
+
+.detail-flag {
+  width: 62px;
+  height: 62px;
 }
 
 .nation-name {
@@ -375,19 +386,6 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.country-token {
-  width: 62px;
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-  color: #111713;
-  background: var(--marker);
-  font-size: 19px;
-  font-weight: 900;
-  border: 1px solid rgba(0, 0, 0, 0.14);
 }
 
 .detail-header h2 {
@@ -640,5 +638,9 @@ footer {
     grid-auto-flow: column;
     justify-content: start;
     gap: 8px;
+  }
+
+  .pitch {
+    width: 100%;
   }
 }

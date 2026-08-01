@@ -11,12 +11,14 @@ import {
   Trophy,
 } from 'lucide-react'
 import './App.css'
-import type { Dataset, NationStats, Shot } from './types'
+import { flagUrlForCountry } from './flags'
+import type { Dataset, NationStats, Shot, Team } from './types'
 
 type Mode = 'goals' | 'shots'
 type Unit = 'yards' | 'meters'
 
 const PITCH_LENGTH = 105
+const HALF_PITCH_LENGTH = PITCH_LENGTH / 2
 const PITCH_WIDTH = 68
 const METERS_TO_YARDS = 1.0936133
 const DISTANCE_RINGS_YD = [6, 12, 18, 24, 30, 36]
@@ -86,14 +88,15 @@ function nationMarkerPosition(nation: NationStats, index: number) {
   const laneCount = 8
   const lane = index % laneCount
   const row = Math.floor(index / laneCount)
-  const x = Math.max(4.8, Math.min(45, nation.avgDistanceYards / METERS_TO_YARDS))
+  const x = Math.max(4.8, Math.min(HALF_PITCH_LENGTH - 6, nation.avgDistanceYards / METERS_TO_YARDS))
   const y = 7.8 + lane * 7.45 + (row % 2) * 2.45
 
   return { x, y }
 }
 
-function deriveNationStats(shots: Shot[]) {
+function deriveNationStats(shots: Shot[], teams: Team[]) {
   const byTeam = new Map<number, Shot[]>()
+  const teamsById = new Map(teams.map((team) => [team.id, team]))
 
   for (const shot of shots) {
     if (shot.distanceYards === null || shot.playerX === null || shot.playerY === null) continue
@@ -112,6 +115,7 @@ function deriveNationStats(shots: Shot[]) {
         teamId,
         teamName: first.teamName,
         teamAbbreviation: first.teamAbbreviation,
+        countryCode: teamsById.get(teamId)?.countryCode ?? first.teamAbbreviation,
         shots: rows.sort((a, b) => (a.timeSeconds ?? 0) - (b.timeSeconds ?? 0)),
         count: rows.length,
         goalCount: rows.filter((shot) => shot.isGoal).length,
@@ -125,6 +129,22 @@ function deriveNationStats(shots: Shot[]) {
       } satisfies NationStats
     })
     .sort((a, b) => b.avgDistanceYards - a.avgDistanceYards)
+}
+
+function FlagBadge({
+  countryCode,
+  label,
+  className = '',
+}: {
+  countryCode: string
+  label: string
+  className?: string
+}) {
+  return (
+    <span className={`flag-badge ${className}`}>
+      <img src={flagUrlForCountry(countryCode)} alt={label} loading="lazy" />
+    </span>
+  )
 }
 
 function useDataset() {
@@ -174,7 +194,7 @@ function PitchMap({
   onSelect: (teamId: number) => void
 }) {
   const goalShots = shots.filter((shot) => shot.isGoal)
-  const visibleShots = shots.filter((shot) => shot.playerX !== null && shot.playerY !== null)
+  const visibleShots = shots.filter((shot) => shot.playerX !== null && shot.playerY !== null && svgX(shot.playerX) <= HALF_PITCH_LENGTH)
   const selectedNation = nations.find((nation) => nation.teamId === selectedTeamId)
   const plottedNations = [
     ...nations.filter((nation) => nation.teamId !== selectedTeamId),
@@ -182,10 +202,10 @@ function PitchMap({
   ]
 
   return (
-    <svg className="pitch" viewBox="-3 -3 111 74" role="img" aria-label="World Cup 2026 shot range pitch">
+    <svg className="pitch" viewBox={`-3 -3 ${HALF_PITCH_LENGTH + 6} 74`} role="img" aria-label="World Cup 2026 attacking-half shot range pitch">
       <defs>
         <clipPath id="pitch-clip">
-          <rect x="0" y="0" width={PITCH_LENGTH} height={PITCH_WIDTH} rx="0" />
+          <rect x="0" y="0" width={HALF_PITCH_LENGTH} height={PITCH_WIDTH} rx="0" />
         </clipPath>
         <linearGradient id="pitch-grass" x1="0" x2="1" y1="0" y2="1">
           <stop offset="0%" stopColor="#2e7a51" />
@@ -194,24 +214,21 @@ function PitchMap({
         </linearGradient>
       </defs>
 
-      <rect className="pitch-base" x="0" y="0" width={PITCH_LENGTH} height={PITCH_WIDTH} />
+      <rect className="pitch-base" x="0" y="0" width={HALF_PITCH_LENGTH} height={PITCH_WIDTH} />
       <g className="mow-lines" clipPath="url(#pitch-clip)">
-        {Array.from({ length: 8 }, (_, index) => (
-          <rect key={index} x={index * 13.125} y="0" width="6.5625" height={PITCH_WIDTH} />
+        {Array.from({ length: 6 }, (_, index) => (
+          <rect key={index} x={(index * HALF_PITCH_LENGTH) / 6} y="0" width={HALF_PITCH_LENGTH / 12} height={PITCH_WIDTH} />
         ))}
       </g>
 
-      <g className="pitch-lines">
-        <rect x="0" y="0" width={PITCH_LENGTH} height={PITCH_WIDTH} />
-        <line x1={PITCH_LENGTH / 2} y1="0" x2={PITCH_LENGTH / 2} y2={PITCH_WIDTH} />
-        <circle cx={PITCH_LENGTH / 2} cy={PITCH_WIDTH / 2} r="9.15" />
+      <g className="pitch-lines" clipPath="url(#pitch-clip)">
+        <rect x="0" y="0" width={HALF_PITCH_LENGTH} height={PITCH_WIDTH} />
+        <line x1={HALF_PITCH_LENGTH} y1="0" x2={HALF_PITCH_LENGTH} y2={PITCH_WIDTH} />
+        <circle cx={HALF_PITCH_LENGTH} cy={PITCH_WIDTH / 2} r="9.15" />
         <rect x="0" y="13.84" width="16.5" height="40.32" />
         <rect x="0" y="24.84" width="5.5" height="18.32" />
         <path d="M 16.5 24.85 A 9.15 9.15 0 0 1 16.5 43.15" />
         <circle cx="11" cy="34" r="0.45" />
-        <rect x="88.5" y="13.84" width="16.5" height="40.32" />
-        <rect x="99.5" y="24.84" width="5.5" height="18.32" />
-        <circle cx="94" cy="34" r="0.45" />
       </g>
 
       <g className="distance-rings" clipPath="url(#pitch-clip)">
@@ -261,9 +278,11 @@ function PitchMap({
 
       <g className="nation-markers">
         {plottedNations.map((nation) => {
-          const radius = Math.max(2.4, Math.min(4.9, 2.2 + Math.sqrt(nation.count) * 0.42))
+          const radius = selectedTeamId === nation.teamId ? 1.75 : 1.35
           const markerIndex = nations.findIndex((row) => row.teamId === nation.teamId)
           const markerPosition = nationMarkerPosition(nation, markerIndex)
+          const flagUrl = flagUrlForCountry(nation.countryCode)
+          const clipId = `flag-clip-${nation.teamId}`
 
           return (
             <g
@@ -279,9 +298,21 @@ function PitchMap({
                 if (event.key === 'Enter' || event.key === ' ') onSelect(nation.teamId)
               }}
             >
+              <clipPath id={clipId}>
+                <circle r={radius} />
+              </clipPath>
               <circle className="hit-area" r={radius + 2.6} />
-              <circle className="marker-core" r={radius} />
-              <text y="0.65">{nation.teamAbbreviation}</text>
+              <image
+                className="marker-flag"
+                href={flagUrl}
+                x={-radius}
+                y={-radius}
+                width={radius * 2}
+                height={radius * 2}
+                clipPath={`url(#${clipId})`}
+                preserveAspectRatio="xMidYMid slice"
+              />
+              <circle className="marker-ring" r={radius} />
               <title>
                 {nation.teamName}: {formatDistance(nation.avgDistanceYards, 'yards')} average
               </title>
@@ -319,7 +350,7 @@ function Leaderboard({
             onClick={() => onSelect(nation.teamId)}
           >
             <span className="rank">{index + 1}</span>
-            <span className={`swatch ${bandClass(nation.band)}`} />
+            <FlagBadge countryCode={nation.countryCode} label={`${nation.teamName} flag`} className="list-flag" />
             <span className="nation-name">
               <strong>{nation.teamAbbreviation}</strong>
               <small>{nation.teamName}</small>
@@ -363,7 +394,7 @@ function DetailPanel({
   return (
     <aside className="detail-panel">
       <div className="detail-header">
-        <span className={`country-token ${bandClass(nation.band)}`}>{nation.teamAbbreviation}</span>
+        <FlagBadge countryCode={nation.countryCode} label={`${nation.teamName} flag`} className="detail-flag" />
         <div>
           <h2>{nation.teamName}</h2>
           <p>{nation.band} average range</p>
@@ -432,7 +463,7 @@ function App() {
     })
   }, [dataset, includePenalties, mode])
 
-  const nationStats = useMemo(() => deriveNationStats(filteredShots), [filteredShots])
+  const nationStats = useMemo(() => deriveNationStats(filteredShots, dataset?.teams ?? []), [dataset?.teams, filteredShots])
   const selectedNation = nationStats.find((nation) => nation.teamId === selectedTeamId) ?? nationStats[0]
 
   useEffect(() => {
@@ -522,6 +553,12 @@ function App() {
 
       <footer>
         <span>Source: {dataset.source.name}</span>
+        <span>
+          Flags:{' '}
+          <a href="https://flagcdn.com/" target="_blank" rel="noreferrer">
+            FlagCDN
+          </a>
+        </span>
         {generated && <span>Generated {generated}</span>}
       </footer>
     </main>
